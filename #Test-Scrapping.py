@@ -1,25 +1,41 @@
-# #Test Selenium
-# from selenium import webdriver
-# import pandas as pd
-# from bs4 import BeautifulSoup
-# driver = webdriver.Chrome("learn/helloML-AI/chromedriver")
-# products = []  # List to store name of the product
-# prices = []  # List to store price of the product
-# ratings = []  # List to store rating of the product
-# driver.get("<a href=\"https://www.flipkart.com/laptops/\">https://www.flipkart.com/laptops/</a>~buyback-guarantee-on-laptops-/pr?sid=6bo%2Cb5g&amp;amp;amp;amp;amp;amp;amp;amp;amp;uniq")
-# content = driver.page_source
-# soup = BeautifulSoup(content)
-# for a in soup.findAll('a', href=True, attrs={'class': '_31qSD5'}):
-#     name = a.find('div', attrs={'class': '_3wU53n'})
-#     price = a.find('div', attrs={'class': '_1vC4OE _2rQ-NK'})
-#     rating = a.find('div', attrs={'class': 'hGSR34 _2beYZw'})
-#     products.append(name.text)
-#     prices.append(price.text)
-#     ratings.append(rating.text)
-# df = pd.DataFrame(
-#     {'Product Name': products, 'Price': prices, 'Rating': ratings})
-# df.to_csv('products.csv', index=False, encoding='utf-8')
+
 
 
 #New reference viblo
-import Scrapy
+# in crawler folder
+
+
+
+#Using Requests Library
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+products = []  # List to store name of the product
+prices = []  # List to store price of the product
+brands = []  # List to store brand of the product
+links = []  # List to store detail link of the product
+count = 0
+for i in range(7):
+    response = requests.get(
+        "https://www.thegioinuochoa.com.vn/nuoc-hoa-ban-chay/#", params={"sex": 146, "page": int(i+1), "bestseller": 1})
+    soup = BeautifulSoup(response.content, "html.parser")
+    body = soup.findAll('div', class_='product-item-body')
+    if len(body) > 0:
+        for item in body:
+            name = item.find('a', class_='product-name').text
+            link = "https://www.thegioinuochoa.com.vn" + item.find('a', class_='product-name').attrs["href"]
+            brand = item.find('a', class_='product-brand').text
+            price = item.find('div', class_='product-price').findAll('span')[1].text
+            if brand != "Minus 417":
+                products.append(name)
+                links.append(link)
+                brands.append(brand)
+                prices.append(price)
+                count += 1
+                print(name)
+
+df = pd.DataFrame(
+    {'Product Name': products, 'Brand': brands, 'Price': prices, 'Link': links})
+df.to_csv('best_seller_women.csv', index=False, encoding='utf-8')
+print('===== DONE =====')
