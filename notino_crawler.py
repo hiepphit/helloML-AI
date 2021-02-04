@@ -1,11 +1,14 @@
-# demo selenium
-# #Test Selenium
-from selenium import webdriver
-import pandas as pd
-import os
-from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
 from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
+from webdriver_manager.chrome import ChromeDriverManager
+import os
+import pandas as pd
+from selenium import webdriver
+from datetime import datetime
+
+now = datetime.now()
+
+current_time = now.strftime("%H_%M_%d_%m_%y")
 options = Options()
 options.add_argument("--headless")
 driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
@@ -16,25 +19,21 @@ brands = []  # List to store name of the Product Brand
 links = []  # List to store link of the Product
 counts = []
 url = "https://www.notino.fr"
-driver.get(url+"/parfums-homme/")
 
-content = driver.page_source
-soup = BeautifulSoup(content)
 count = 0
 try:
-    for a in soup.findAll('li', attrs={'class': 'item-filtered'}):
-        brand = a.find('a')
-        brandLink = brand.attrs['href']
-        driver1 = webdriver.Chrome(
-            ChromeDriverManager().install(), options=options)
-        driver1.get(url+brandLink)
-        allProductSource = driver1.page_source
-        if not allProductSource:
-            continue
-        allProductSoup = BeautifulSoup(allProductSource)
-        for p in allProductSoup.findAll('li', attrs={'class': 'item'}):
-            linkProduct = p.find('a').attrs['href']
-            driverProduct = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    driver.get(url+"/parfums-homme/")
+    content = driver.page_source
+    soup = BeautifulSoup(content)
+    while True:
+        listProduct = soup.find('ul', attrs={'id': 'productsList'})
+        for a in listProduct.findAll('li', attrs={'class': 'item'}):
+            tag = a.find('a')
+            if not tag:
+                continue
+            linkProduct = tag.attrs['href']
+            driverProduct = webdriver.Chrome(
+                ChromeDriverManager().install(), options=options)
             driverProduct.get(url+linkProduct)
             productSource = driverProduct.page_source
             if not productSource:
@@ -45,26 +44,35 @@ try:
             brandName = contentHeader[0].text
             productName = contentHeader[1].text
             descriptionName = contentHeader[2].text
-            contentPrice = productSoup.find('span', attrs={'class': 'styled__PriceWrapper-pp9c4m-1 fqeInH'})
+            contentPrice = productSoup.find(
+                'span', attrs={'class': 'styled__PriceWrapper-pp9c4m-1 fqeInH'})
             price = 'null'
             if contentPrice:
                 price = contentPrice.find('span').attrs['content']
-            
+
             names.append(productName)
             types.append(descriptionName)
             brands.append(brandName)
             links.append(url+linkProduct)
             prices.append(price)
-            count +=1
+            count += 1
             counts.append(count)
             print(count)
             print(productName)
             driverProduct.close()
-        driver1.close()
+        nextE = soup.find('a', attrs={'class': 'next'})
+        if nextE:
+            nextPage = nextE.attrs['href']
+            driver.get(nextPage)
+            content = driver.page_source
+            soup = BeautifulSoup(content)
+        else:
+            break
     df = pd.DataFrame(
         {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
-    df.to_csv('full_men_notino.csv', index=False, encoding='utf-8')
+    df.to_csv('full_men_notino'+current_time+'.csv', index=False, encoding='utf-8')
 except:
     df = pd.DataFrame(
-        { 'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
-    df.to_csv('full_men_notino.csv', index=False, encoding='utf-8')
+        {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
+    df.to_csv('full_men_notino'+current_time +
+              '.csv', index=False, encoding='utf-8')
