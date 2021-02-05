@@ -68,11 +68,18 @@ try:
             soup = BeautifulSoup(content)
         else:
             break
+    end = datetime.now()
+    end_time = end.strftime("%H_%M_%d_%m_%y")
+    print('END ==================== ' + end_time)
     df = pd.DataFrame(
         {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
-    df.to_csv('full_men_notino'+current_time+'.csv', index=False, encoding='utf-8')
+    df.to_csv('./perfume/notino/full_men_notino'+current_time+'.csv', index=False, encoding='utf-8')
 except:
-    df = pd.DataFrame(
-        {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
-    df.to_csv('full_men_notino'+current_time +
-              '.csv', index=False, encoding='utf-8')
+    end = datetime.now()
+    end_time = end.strftime("%H_%M_%d_%m_%y")
+    print('END ==================== ' + end_time)
+    if len(names) > 0:
+        df = pd.DataFrame(
+            {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
+        df.to_csv('./perfume/notino/full_men_notino'+current_time +
+                '.csv', index=False, encoding='utf-8')
