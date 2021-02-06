@@ -7,23 +7,35 @@ from selenium import webdriver
 from datetime import datetime
 import time
 
+########################## DEFINE #####################
+TOTAL_PAGE = 6
+url = "https://www.sephora.com"
+initLinkList = "/shop/fragrances-for-men?currentPage="
+#######################################################
+
+
 now = datetime.now()
 current_time = now.strftime("%H_%M_%d_%m_%y")
+
+
+abs_dir = os.path.dirname(__file__)
+new_csv_path = abs_dir+'/men_best_sell_sephora'+ current_time +'.csv'
+
+
 options = Options()
-# options.add_argument("--headless")
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+options.add_argument("--headless")
 names = []  # List to store name of the Product
 types = []  # List to store type of the Product Brand
 prices = []  # List to store price of the Product Brand
 brands = []  # List to store name of the Product Brand
 links = []  # List to store link of the Product
 counts = []
-url = "https://www.sephora.com"
 
 count = 0
 try:
-    for i in range(6):
-        link = url+"/shop/fragrances-for-men?currentPage="+str(i+1)
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    for i in range(TOTAL_PAGE):
+        link = url+initLinkList+str(i+1)
         driver.get(link)
         position = 0
         for b in range(5):
@@ -80,13 +92,13 @@ try:
             counts.append(count)
             print(count)
             driverProduct.close()
+    driver.close()
     end = datetime.now()
     end_time = end.strftime("%H_%M_%d_%m_%y")
     print('END ==================== '+ end_time)
     df = pd.DataFrame(
         {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'USD', 'Link': links})
-    df.to_csv('./perfume/Shephora/full_men_shephora'+current_time +
-              '.csv', index=False, encoding='utf-8')
+    df.to_csv(new_csv_path, index=False, encoding='utf-8')
 except:
     end = datetime.now()
     end_time = end.strftime("%H_%M_%d_%m_%y")
@@ -94,5 +106,4 @@ except:
     if len(names) > 0:
         df = pd.DataFrame(
             {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'USD', 'Link': links})
-        df.to_csv('./perfume/Shephora/full_men_shephora'+current_time +
-                '.csv', index=False, encoding='utf-8')
+        df.to_csv(new_csv_path, index=False, encoding='utf-8')

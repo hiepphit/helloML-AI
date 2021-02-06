@@ -7,11 +7,13 @@ from selenium import webdriver
 from datetime import datetime
 
 now = datetime.now()
-
 current_time = now.strftime("%H_%M_%d_%m_%y")
+
+abs_dir = os.path.dirname(__file__)
+new_csv_path = abs_dir+'/full_men_notino'+current_time+'.csv'
+
 options = Options()
 options.add_argument("--headless")
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 names = []  # List to store name of the Product
 types = []  # List to store type of the Product Brand
 prices = []  # List to store price of the Product Brand
@@ -21,7 +23,10 @@ counts = []
 url = "https://www.notino.fr"
 
 count = 0
+
+
 try:
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     driver.get(url+"/parfums-homme/")
     content = driver.page_source
     soup = BeautifulSoup(content)
@@ -68,12 +73,13 @@ try:
             soup = BeautifulSoup(content)
         else:
             break
+    driver.close()
     end = datetime.now()
     end_time = end.strftime("%H_%M_%d_%m_%y")
     print('END ==================== ' + end_time)
     df = pd.DataFrame(
         {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
-    df.to_csv('./perfume/notino/full_men_notino'+current_time+'.csv', index=False, encoding='utf-8')
+    df.to_csv(new_csv_path, index=False, encoding='utf-8')
 except:
     end = datetime.now()
     end_time = end.strftime("%H_%M_%d_%m_%y")
@@ -81,5 +87,4 @@ except:
     if len(names) > 0:
         df = pd.DataFrame(
             {'No': counts, 'Name': names, 'Type': types, 'Brand Name': brands, 'Price': prices, 'Currency': 'EUR', 'Link': links})
-        df.to_csv('./perfume/notino/full_men_notino'+current_time +
-                '.csv', index=False, encoding='utf-8')
+        df.to_csv(new_csv_path, index=False, encoding='utf-8')
